@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=3.0, minimum-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="//unpkg.com/alpinejs" defer></script>
+		<title>TFI 22</title>
+	</head>
+	<body>
+		<div class="container mx-auto mt-4 px-2 md:px-0" x-data="housemap">
+			<canvas @click="console.log(Math.pow($event.layerX - houses[0].coords[0],2) + Math.pow($event.layerY - houses[0].coords[1],2))"
+			        width="1280"
+			        height="667"
+			        class="w-full border border-gray-300"
+			        x-ref="canvas"></canvas>
+
+			<div class="mt-4 flex">
+				<select x-model="selectedHouse" class="border border-gray-400 px-3 py-2 mr-4 text-xl rounded">
+					<option value="">Select House</option>
+					<template x-for="name in houseNames">
+						<option :value="name" x-text="name"></option>
+					</template>
+				</select>
+				<div class="relative w-full">
+					<input x-model="search" placeholder="Search for person..." class="w-full border border-gray-400 px-3 py-2 text-xl rounded" />
+					<div
+							x-show="search.length > 0 || selectedHouse.length > 0"
+							@click="reset"
+							class="absolute right-5 p-3 text-lg -top-1 cursor-pointer"
+					>
+						&times;
+					</div>
+				</div>
+			</div>
+			<ul class="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+				<template x-for="result in searchResults" :key="result.name">
+					<li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="highlight(result.house)">
+						<span x-text="result.name" class="text-xl"></span>
+						<span class="text-sm text-gray-600">Haus <span x-text="result.house"></span></span>
+					</li>
+				</template>
+			</ul>
+		</div>
+
+		<script>
+			document.addEventListener('alpine:init', () => {
+				Alpine.data('housemap', () => ({
+					search:    '',
+					houses:    [
+						{
+							name:   'D',
+							coords: [
+								682,
+								380,
+								29,
+							],
+							people: [
+								'Bolt',
+								'Fex',
+								'Kawa',
+								'Noroth',
+							],
+						},
+						{
+							name:   'B',
+							coords: [
+								626,
+								392,
+								30,
+							],
+							people: [
+								'Alex Shep',
+								'Octane',
+								'Rico',
+								'Siber',
+							],
+						},
+						{
+							name:   'E',
+							coords: [
+								581,
+								365,
+								30,
+							],
+							people: [
+								'Ryius',
+								'Sereas',
+								'Werikane',
+								'Kestral',
+							],
+						},
+						{
+							name:   '3',
+							coords: [
+								818,
+								289,
+								28,
+							],
+							people: [
+								'AkiFox',
+								'Nanaki',
+								'Red Fox',
+								'Arco',
+								'Caida',
+							],
+						},
+						{
+							name:   '5',
+							coords: [
+								765,
+								270,
+								30,
+							],
+							people: [
+								'Frosty Wuff',
+								'Kuro Collie',
+								'Blouie',
+								'Tosh Corgi',
+								'Deox',
+								'Uly Lynx',
+							],
+						},
+						{
+							name:   'H',
+							coords: [
+								435,
+								95,
+								29,
+							],
+							people: [
+								'Trace Hyena',
+								'Dexter',
+								'FlyingPuma',
+								"Fine",
+							],
+						},
+						{
+							name:   'C',
+							coords: [
+								629,
+								93,
+								30,
+							],
+							people: [
+								'Hutz',
+								'Wux',
+								'Ryan',
+								'Lynkilas',
+							],
+						},
+						{
+							name:   'G',
+							coords: [
+								686,
+								118,
+								31,
+							],
+							people: [
+								'Ice',
+								'Raven',
+								'Katyro',
+								'Rex',
+							],
+						},
+						{
+							name:   'I',
+							coords: [
+								749,
+								110,
+								30,
+							],
+							people: [
+								'ScharasTheFolf',
+								'Cadian',
+								'Iggi',
+								'Niidrax',
+							],
+						},
+						{
+							name:   'Alpha',
+							coords: [
+								324,
+								213,
+								30,
+							],
+							people: [
+								'Schma',
+								'Frickler',
+								'Inuh',
+								'Gryffon',
+								'Mika',
+							],
+						},
+						{
+							name:   '2',
+							coords: [
+								479,
+								277,
+								35,
+							],
+							people: [
+								'Drakee',
+								'Arro',
+								'Muaxxky',
+								'Legiard',
+								'LuckyFox',
+								'StaRz',
+							],
+						},
+						{
+							name:   '1',
+							coords: [
+								540,
+								266,
+								31,
+							],
+							people: [
+								'Nebulous',
+								'Kiwi',
+								'Cronus',
+								'Mira',
+								'Spirou',
+							],
+						},
+						{
+							name:   'F',
+							coords: [
+								587,
+								224,
+								29,
+							],
+							people: [
+								'Demian',
+								'Fjordy',
+								'Keeru',
+								'Shian',
+							],
+						},
+						{
+							name:   'A',
+							coords: [
+								641,
+								157,
+								32,
+							],
+							people: [
+								'Chris_Husky',
+								'Maki FoxCat',
+								'Netho',
+								'Sky',
+								'AkiLynx',
+							],
+						},
+						{
+							name:   'J',
+							coords: [
+								737,
+								166,
+								31,
+							],
+							people: [
+								'Sternchen',
+								'Karrn',
+								'Nerkitt',
+								'Chitatz',
+							],
+						},
+						{
+							name:   '6',
+							coords: [
+								490,
+								334,
+								31,
+							],
+							people: [
+								'Techy',
+								'Karu',
+								'Taru',
+								'gDragy',
+								'Celshin',
+								'Auhy',
+							],
+						},
+						{
+							name:   '4',
+							coords: [
+								625,
+								267,
+								30,
+							],
+							people: [
+								'Nessy',
+								'Godrec',
+								'Zoriion',
+								'CaptainChaotika',
+								'ShishaSheppy',
+								'Tyson',
+							],
+						},
+					],
+					peopleMap: {},
+					get searchResults() {
+						const search = this.search.toLowerCase();
+						return Object.keys(this.peopleMap)
+						             .filter(name => search === '' || name.indexOf(search) >= 0)
+						             .filter(name => {
+							             const house = this.peopleMap[name].house;
+							             return this.selectedHouse === "" || house === this.selectedHouse;
+						             })
+						             .map(name => {
+							             return {
+								             name:  this.peopleMap[name].name,
+								             house: this.peopleMap[name].house,
+							             };
+						             });
+					},
+					houseNames:    [],
+					selectedHouse: "",
+					context:       null,
+					image:         null,
+					imageLoaded:   false,
+					reset() {
+						this.search = '';
+						if(this.selectedHouse.length > 0) {
+							this.selectedHouse = '';
+							this.redraw();
+						}
+					},
+					highlight(houseName) {
+						let house = this.houses.filter(house => house.name === houseName);
+						if(house.length === 0) {
+							return;
+						}
+						this.redraw();
+						house = house[0];
+						this.selectedHouse = house.name;
+
+						this.context.beginPath();
+						this.context.arc(house.coords[0], house.coords[1], house.coords[2], 0, 2 * Math.PI, false);
+						this.context.fillStyle = 'rgba(200,15,30,0.75)';
+						this.context.fill();
+					},
+					redraw() {
+						const w = this.$refs.canvas.width;
+						const h = this.$refs.canvas.height;
+						this.context.clearRect(0, 0, w, h);
+						this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height, 0, 0, w, h);
+						this.houses.forEach((house) => {
+							if(!this.houseNames.includes(house.name)) {
+								this.houseNames.push(house.name);
+							}
+
+							house.people.forEach(person => {
+								this.peopleMap[person.toLowerCase()] = {
+									name:  person,
+									house: house.name,
+								};
+							});
+						});
+					},
+					init() {
+						this.context = this.$refs.canvas.getContext('2d');
+						this.houses.sort((a, b) => a.name < b.name
+						                           ? -1
+						                           : 1);
+
+						this.image = new Image();
+						this.image.src = './tfi_map.jpg';
+						this.image.onload = () => this.redraw();
+					},
+				}));
+			});
+		</script>
+	</body>
+</html>
