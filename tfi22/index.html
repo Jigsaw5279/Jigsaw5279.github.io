@@ -33,12 +33,13 @@
 						&times;
 					</div>
 				</div>
+				<button :disabled="search.length === 0 && selectedHouse.length === 0" class="ml-4 rounded border px-3 bg-red-100 hover:border-red-400 hover:bg-red-300 py-2 text-xl text-gray-700 disabled:text-gray-400 disabled:bg-gray-100 disabled:border-gray-300 disabled:cursor-not-allowed" @click.prevent.stop="reset">Reset</button>
 			</div>
 			<ul class="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
 				<template x-for="result in searchResults" :key="result.name">
 					<li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="highlight(result.house)">
 						<span x-text="result.name" class="text-xl"></span>
-						<span class="text-sm text-gray-600">Haus <span x-text="result.house"></span></span>
+						<span class="text-sm text-gray-600">House <span x-text="result.house"></span></span>
 					</li>
 				</template>
 			</ul>
