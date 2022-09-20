@@ -37,7 +37,7 @@
 			</div>
 			<ul class="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
 				<template x-for="result in searchResults" :key="result.name">
-					<li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="highlight(result.house)">
+					<li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="selectedHouse = result.house">
 						<span x-text="result.name" class="text-xl"></span>
 						<span class="text-sm text-gray-600">House <span x-text="result.house"></span></span>
 					</li>
@@ -330,18 +330,22 @@
 						}
 					},
 					highlight(houseName) {
+						this.redraw();
 						let house = this.houses.filter(house => house.name === houseName);
 						if(house.length === 0) {
 							return;
 						}
-						this.redraw();
 						house = house[0];
-						this.selectedHouse = house.name;
 
 						this.context.beginPath();
 						this.context.arc(house.coords[0], house.coords[1], house.coords[2], 0, 2 * Math.PI, false);
 						this.context.fillStyle = 'rgba(200,15,30,0.75)';
 						this.context.fill();
+
+						window.scrollTo({
+							top:      0,
+							behavior: "smooth",
+						});
 					},
 					redraw() {
 						const w = this.$refs.canvas.width;
@@ -370,6 +374,8 @@
 						this.image = new Image();
 						this.image.src = './tfi_map.jpg';
 						this.image.onload = () => this.redraw();
+
+						this.$watch('selectedHouse', value => this.highlight(value));
 					},
 				}));
 			});
