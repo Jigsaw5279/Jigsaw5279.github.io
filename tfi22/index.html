@@ -18,14 +18,14 @@
 			        :class="{'cursor-pointer': hovering}"
 			        x-ref="canvas"></canvas>
 
-			<div class="mt-4 flex">
-				<select x-model="selectedHouse" class="border border-gray-400 px-3 py-2 mr-4 text-xl rounded">
+			<div class="mt-4 flex flex-col md:flex-row">
+				<select x-model="selectedHouse" class="w-full md:w-auto border border-gray-400 px-3 py-2 mr-4 text-xl rounded">
 					<option value="">Select House</option>
 					<template x-for="name in houseNames">
 						<option :value="name" x-text="name"></option>
 					</template>
 				</select>
-				<div class="relative w-full">
+				<div class="relative w-full mt-2 md:mt-0">
 					<input x-model="search" placeholder="Search for person..." class="w-full border border-gray-400 px-3 py-2 text-xl rounded" />
 					<div
 							x-show="search.length > 0 || selectedHouse.length > 0"
@@ -35,9 +35,15 @@
 						&times;
 					</div>
 				</div>
-				<button :disabled="search.length === 0 && selectedHouse.length === 0" class="ml-4 rounded border px-3 bg-red-100 hover:border-red-400 hover:bg-red-300 py-2 text-xl text-gray-700 disabled:text-gray-400 disabled:bg-gray-100 disabled:border-gray-300 disabled:cursor-not-allowed" @click.prevent.stop="reset">Reset</button>
+				<button
+						:disabled="search.length === 0 && selectedHouse.length === 0"
+						class="w-full mt-2 md:mt-0 md:w-auto md:ml-4 rounded border px-3 bg-red-100 hover:border-red-400 hover:bg-red-300 py-2 text-xl text-gray-700 disabled:text-gray-400 disabled:bg-gray-100 disabled:border-gray-300 disabled:cursor-not-allowed"
+						@click.prevent.stop="reset"
+				>
+					Reset
+				</button>
 			</div>
-			<ul class="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+			<ul class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				<template x-for="result in searchResults" :key="result.name">
 					<li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="selectedHouse = result.house">
 						<span x-text="result.name" class="text-xl"></span>
