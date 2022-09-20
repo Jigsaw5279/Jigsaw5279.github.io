@@ -10,10 +10,12 @@
 	</head>
 	<body>
 		<div class="container mx-auto mt-4 px-2 md:px-0" x-data="housemap">
-			<canvas @click="console.log(Math.pow($event.layerX - houses[0].coords[0],2) + Math.pow($event.layerY - houses[0].coords[1],2))"
+			<canvas @click="handleMapClick"
+			        @mousemove.throttle.25ms="handleMouseOnMap"
 			        width="1280"
 			        height="667"
 			        class="w-full border border-gray-300"
+			        :class="{'cursor-pointer': hovering}"
 			        x-ref="canvas"></canvas>
 
 			<div class="mt-4 flex">
@@ -322,6 +324,7 @@
 					context:       null,
 					image:         null,
 					imageLoaded:   false,
+					hovering: false,
 					reset() {
 						this.search = '';
 						if(this.selectedHouse.length > 0) {
@@ -364,6 +367,27 @@
 								};
 							});
 						});
+					},
+					hitHouse(relativeX, relativeY) {
+						return this.houses.find(house => {
+							return Math.pow(relativeX - house.coords[0], 2) + Math.pow(relativeY - house.coords[1], 2) < Math.pow(house.coords[2], 2);
+						});
+					},
+					handleMapClick(event) {
+						const multiplier = this.$refs.canvas.width / this.$refs.canvas.clientWidth;
+						let relativeX = (event.layerX - this.$refs.canvas.offsetLeft) * multiplier;
+						let relativeY = (event.layerY - this.$refs.canvas.offsetTop) * multiplier;
+						const hit = this.hitHouse(relativeX, relativeY);
+
+						if(hit) {
+							this.selectedHouse = hit.name;
+						}
+					},
+					handleMouseOnMap(event) {
+						const multiplier = this.$refs.canvas.width / this.$refs.canvas.clientWidth;
+						let relativeX = (event.layerX - this.$refs.canvas.offsetLeft) * multiplier;
+						let relativeY = (event.layerY - this.$refs.canvas.offsetTop) * multiplier;
+						this.hovering = this.hitHouse(relativeX, relativeY);
 					},
 					init() {
 						this.context = this.$refs.canvas.getContext('2d');
