@@ -1,414 +1,467 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=3.0, minimum-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<script src="https://cdn.tailwindcss.com"></script>
-		<script src="//unpkg.com/alpinejs" defer></script>
-		<title>TFI 22</title>
-	</head>
-	<body>
-		<div class="container mx-auto mt-4 px-2 md:px-0" x-data="housemap">
-			<canvas @click="handleMapClick"
-			        @mousemove.throttle.25ms="handleMouseOnMap"
-			        width="1280"
-			        height="667"
-			        class="w-full border border-gray-300"
-			        :class="{'cursor-pointer': hovering}"
-			        x-ref="canvas"></canvas>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=3.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <title>TFI 22</title>
+</head>
+<body>
+<div class="container mx-auto mt-4 px-2 md:px-0" x-data="housemap">
+    <canvas @click="handleMapClick"
+            @mousemove.throttle.25ms="handleMouseOnMap"
+            width="1280"
+            height="667"
+            class="w-full border border-gray-300"
+            :class="{'cursor-pointer': hovering}"
+            x-ref="canvas"></canvas>
 
-			<div class="mt-4 flex flex-col md:flex-row">
-				<select x-model="selectedHouse" class="w-full md:w-auto border border-gray-400 px-3 py-2 mr-4 text-xl rounded">
-					<option value="">Select House</option>
-					<template x-for="name in houseNames">
-						<option :value="name" x-text="name"></option>
-					</template>
-				</select>
-				<div class="relative w-full mt-2 md:mt-0">
-					<input x-model="search" placeholder="Search for person..." class="w-full border border-gray-400 px-3 py-2 text-xl rounded" />
-					<div
-							x-show="search.length > 0 || selectedHouse.length > 0"
-							@click="reset"
-							class="absolute right-5 p-3 text-lg -top-1 cursor-pointer"
-					>
-						&times;
-					</div>
-				</div>
-				<button
-						:disabled="search.length === 0 && selectedHouse.length === 0"
-						class="w-full mt-2 md:mt-0 md:w-auto md:ml-4 rounded border px-3 bg-red-100 hover:border-red-400 hover:bg-red-300 py-2 text-xl text-gray-700 disabled:text-gray-400 disabled:bg-gray-100 disabled:border-gray-300 disabled:cursor-not-allowed"
-						@click.prevent.stop="reset"
-				>
-					Reset
-				</button>
-			</div>
-			<ul class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-				<template x-for="result in searchResults" :key="result.name">
-					<li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="selectedHouse = result.house">
-						<span x-text="result.name" class="text-xl"></span>
-						<span class="text-sm text-gray-600">House <span x-text="result.house"></span></span>
-					</li>
-				</template>
-			</ul>
-		</div>
+    <template x-if="gps.timestamp > 0">
+        <div>
+            <span x-text="gps.timestamp"></span>,
+            <span x-text="gps.coords.latitude"></span>,
+            <span x-text="gps.coords.longitude"></span>,
+            <span x-text="gps.coords.heading"></span>,
+            <span x-text="gps.coords.speed"></span>,
+            <span x-text="relativePosition.x"></span>,
+            <span x-text="relativePosition.y"></span>,
+        </div>
+    </template>
 
-		<script>
-			document.addEventListener('alpine:init', () => {
-				Alpine.data('housemap', () => ({
-					search:    '',
-					houses:    [
-						{
-							name:   'D',
-							coords: [
-								682,
-								380,
-								29,
-							],
-							people: [
-								'Bolt',
-								'Fex',
-								'Kawa',
-								'Noroth',
-							],
-						},
-						{
-							name:   'B',
-							coords: [
-								626,
-								392,
-								30,
-							],
-							people: [
-								'Alex Shep',
-								'Octane',
-								'Rico',
-								'Siber',
-							],
-						},
-						{
-							name:   'E',
-							coords: [
-								581,
-								365,
-								30,
-							],
-							people: [
-								'Ryius',
-								'Sereas',
-								'Werikane',
-								'Kestral',
-							],
-						},
-						{
-							name:   '3',
-							coords: [
-								818,
-								289,
-								28,
-							],
-							people: [
-								'AkiFox',
-								'Nanaki',
-								'Red Fox',
-								'Arco',
-								'Caida',
-							],
-						},
-						{
-							name:   '5',
-							coords: [
-								765,
-								270,
-								30,
-							],
-							people: [
-								'Frosty Wuff',
-								'Kuro Collie',
-								'Blouie',
-								'Tosh Corgi',
-								'Deox',
-								'Uly Lynx',
-							],
-						},
-						{
-							name:   'H',
-							coords: [
-								435,
-								95,
-								29,
-							],
-							people: [
-								'Trace Hyena',
-								'Dexter',
-								'FlyingPuma',
-								"Finnex",
-							],
-						},
-						{
-							name:   'C',
-							coords: [
-								629,
-								93,
-								30,
-							],
-							people: [
-								'Hutz',
-								'Wux',
-								'Ryan',
-								'Lynkilas',
-							],
-						},
-						{
-							name:   'G',
-							coords: [
-								686,
-								118,
-								31,
-							],
-							people: [
-								'Ice',
-								'Raven',
-								'Katyro',
-								'Rex',
-							],
-						},
-						{
-							name:   'I',
-							coords: [
-								749,
-								110,
-								30,
-							],
-							people: [
-								'ScharasTheFolf',
-								'Cadian',
-								'Iggi',
-								'Niidrax',
-							],
-						},
-						{
-							name:   'Alpha',
-							coords: [
-								324,
-								213,
-								30,
-							],
-							people: [
-								'Schma',
-								'Frickler',
-								'Inuh',
-								'Gryffon',
-								'Mika',
-							],
-						},
-						{
-							name:   '2',
-							coords: [
-								479,
-								277,
-								35,
-							],
-							people: [
-								'Drakee',
-								'Arro',
-								'Muaxxky',
-								'Legiarrd',
-								'LuckyFox',
-								'StaRz',
-							],
-						},
-						{
-							name:   '1',
-							coords: [
-								540,
-								266,
-								31,
-							],
-							people: [
-								'Nebulous',
-								'Kiwi',
-								'Cronus',
-								'Mira',
-								'Spirou',
-							],
-						},
-						{
-							name:   'F',
-							coords: [
-								587,
-								224,
-								29,
-							],
-							people: [
-								'Demian',
-								'Fjordy',
-								'Keeru',
-								'Shian',
-							],
-						},
-						{
-							name:   'A',
-							coords: [
-								641,
-								157,
-								32,
-							],
-							people: [
-								'Chris_Husky',
-								'Maki FoxCat',
-								'Netho',
-								'Sky',
-								'AkiLynx',
-							],
-						},
-						{
-							name:   'J',
-							coords: [
-								737,
-								166,
-								31,
-							],
-							people: [
-								'Sternchen',
-								'Karrn',
-								'Nerkitt',
-								'Chitatz',
-							],
-						},
-						{
-							name:   '6',
-							coords: [
-								490,
-								334,
-								31,
-							],
-							people: [
-								'Techy',
-								'Karu',
-								'Taru',
-								'gDragy',
-								'Celshin',
-								'Auhy',
-							],
-						},
-						{
-							name:   '4',
-							coords: [
-								625,
-								267,
-								30,
-							],
-							people: [
-								'Nessy',
-								'Godrec',
-								'Zoriion',
-								'CaptainChaotika',
-								'ShishaSheppy',
-								'Tyson',
-							],
-						},
-					],
-					peopleMap: {},
-					get searchResults() {
-						const search = this.search.toLowerCase();
-						return Object.keys(this.peopleMap)
-						             .filter(name => search === '' || name.indexOf(search) >= 0)
-						             .filter(name => {
-							             const house = this.peopleMap[name].house;
-							             return this.selectedHouse === "" || house === this.selectedHouse;
-						             })
-						             .map(name => {
-							             return {
-								             name:  this.peopleMap[name].name,
-								             house: this.peopleMap[name].house,
-							             };
-						             });
-					},
-					houseNames:    [],
-					selectedHouse: "",
-					context:       null,
-					image:         null,
-					imageLoaded:   false,
-					hovering: false,
-					reset() {
-						this.search = '';
-						if(this.selectedHouse.length > 0) {
-							this.selectedHouse = '';
-							this.redraw();
-						}
-					},
-					highlight(houseName) {
-						this.redraw();
-						let house = this.houses.filter(house => house.name === houseName);
-						if(house.length === 0) {
-							return;
-						}
-						house = house[0];
+    <div class="mt-4 flex flex-col md:flex-row">
+        <select x-model="selectedHouse" class="w-full md:w-auto border border-gray-400 px-3 py-2 mr-4 text-xl rounded">
+            <option value="">Select House</option>
+            <template x-for="name in houseNames">
+                <option :value="name" x-text="name"></option>
+            </template>
+        </select>
+        <div class="relative w-full mt-2 md:mt-0">
+            <input x-model="search" placeholder="Search for person..."
+                   class="w-full border border-gray-400 px-3 py-2 text-xl rounded"/>
+            <div
+                    x-show="search.length > 0 || selectedHouse.length > 0"
+                    @click="reset"
+                    class="absolute right-5 p-3 text-lg -top-1 cursor-pointer"
+            >
+                &times;
+            </div>
+        </div>
+        <button
+                :disabled="search.length === 0 && selectedHouse.length === 0"
+                class="w-full mt-2 md:mt-0 md:w-auto md:ml-4 rounded border px-3 bg-red-100 hover:border-red-400 hover:bg-red-300 py-2 text-xl text-gray-700 disabled:text-gray-400 disabled:bg-gray-100 disabled:border-gray-300 disabled:cursor-not-allowed"
+                @click.prevent.stop="reset"
+        >
+            Reset
+        </button>
+    </div>
+    <ul class="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <template x-for="result in searchResults" :key="result.name">
+            <li class="flex flex-col cursor-pointer p-2 hover:bg-gray-200" @click="selectedHouse = result.house">
+                <span x-text="result.name" class="text-xl"></span>
+                <span class="text-sm text-gray-600">House <span x-text="result.house"></span></span>
+            </li>
+        </template>
+    </ul>
+</div>
 
-						this.context.beginPath();
-						this.context.arc(house.coords[0], house.coords[1], house.coords[2], 0, 2 * Math.PI, false);
-						this.context.fillStyle = 'rgba(200,15,30,0.75)';
-						this.context.fill();
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('housemap', () => ({
+            search: '',
+            houses: [
+                {
+                    name: 'D',
+                    coords: [
+                        682,
+                        380,
+                        29,
+                    ],
+                    people: [
+                        'Bolt',
+                        'Fex',
+                        'Kawa',
+                        'Noroth',
+                    ],
+                },
+                {
+                    name: 'B',
+                    coords: [
+                        626,
+                        392,
+                        30,
+                    ],
+                    people: [
+                        'Alex Shep',
+                        'Octane',
+                        'Rico',
+                        'Siber',
+                    ],
+                },
+                {
+                    name: 'E',
+                    coords: [
+                        581,
+                        365,
+                        30,
+                    ],
+                    people: [
+                        'Ryius',
+                        'Sereas',
+                        'Werikane',
+                        'Kestral',
+                    ],
+                },
+                {
+                    name: '3',
+                    coords: [
+                        818,
+                        289,
+                        28,
+                    ],
+                    people: [
+                        'AkiFox',
+                        'Nanaki',
+                        'Red Fox',
+                        'Arco',
+                        'Caida',
+                    ],
+                },
+                {
+                    name: '5',
+                    coords: [
+                        765,
+                        270,
+                        30,
+                    ],
+                    people: [
+                        'Frosty Wuff',
+                        'Kuro Collie',
+                        'Blouie',
+                        'Tosh Corgi',
+                        'Deox',
+                        'Uly Lynx',
+                    ],
+                },
+                {
+                    name: 'H',
+                    coords: [
+                        435,
+                        95,
+                        29,
+                    ],
+                    people: [
+                        'Trace Hyena',
+                        'Dexter',
+                        'FlyingPuma',
+                        "Finnex",
+                    ],
+                },
+                {
+                    name: 'C',
+                    coords: [
+                        629,
+                        93,
+                        30,
+                    ],
+                    people: [
+                        'Hutz',
+                        'Wux',
+                        'Ryan',
+                        'Lynkilas',
+                    ],
+                },
+                {
+                    name: 'G',
+                    coords: [
+                        686,
+                        118,
+                        31,
+                    ],
+                    people: [
+                        'Ice',
+                        'Raven',
+                        'Katyro',
+                        'Rex',
+                    ],
+                },
+                {
+                    name: 'I',
+                    coords: [
+                        749,
+                        110,
+                        30,
+                    ],
+                    people: [
+                        'ScharasTheFolf',
+                        'Cadian',
+                        'Iggi',
+                        'Niidrax',
+                    ],
+                },
+                {
+                    name: 'Alpha',
+                    coords: [
+                        324,
+                        213,
+                        30,
+                    ],
+                    people: [
+                        'Schma',
+                        'Frickler',
+                        'Inuh',
+                        'Gryffon',
+                        'Mika',
+                    ],
+                },
+                {
+                    name: '2',
+                    coords: [
+                        479,
+                        277,
+                        35,
+                    ],
+                    people: [
+                        'Drakee',
+                        'Arro',
+                        'Muaxxky',
+                        'Legiarrd',
+                        'LuckyFox',
+                        'StaRz',
+                    ],
+                },
+                {
+                    name: '1',
+                    coords: [
+                        540,
+                        266,
+                        31,
+                    ],
+                    people: [
+                        'Nebulous',
+                        'Kiwi',
+                        'Cronus',
+                        'Mira',
+                        'Spirou',
+                    ],
+                },
+                {
+                    name: 'F',
+                    coords: [
+                        587,
+                        224,
+                        29,
+                    ],
+                    people: [
+                        'Demian',
+                        'Fjordy',
+                        'Keeru',
+                        'Shian',
+                    ],
+                },
+                {
+                    name: 'A',
+                    coords: [
+                        641,
+                        157,
+                        32,
+                    ],
+                    people: [
+                        'Chris_Husky',
+                        'Maki FoxCat',
+                        'Netho',
+                        'Sky',
+                        'AkiLynx',
+                    ],
+                },
+                {
+                    name: 'J',
+                    coords: [
+                        737,
+                        166,
+                        31,
+                    ],
+                    people: [
+                        'Sternchen',
+                        'Karrn',
+                        'Nerkitt',
+                        'Chitatz',
+                    ],
+                },
+                {
+                    name: '6',
+                    coords: [
+                        490,
+                        334,
+                        31,
+                    ],
+                    people: [
+                        'Techy',
+                        'Karu',
+                        'Taru',
+                        'gDragy',
+                        'Celshin',
+                        'Auhy',
+                    ],
+                },
+                {
+                    name: '4',
+                    coords: [
+                        625,
+                        267,
+                        30,
+                    ],
+                    people: [
+                        'Nessy',
+                        'Godrec',
+                        'Zoriion',
+                        'CaptainChaotika',
+                        'ShishaSheppy',
+                        'Tyson',
+                    ],
+                },
+            ],
+            peopleMap: {},
+            geo: {
+                topLeft: {
+                    lat: 52.035355, lng: 13.733263
+                },
+                botRight: {
+                    lat: 52.033482, lng: 13.739469
+                }
+            },
+            get searchResults() {
+                const search = this.search.toLowerCase();
+                return Object.keys(this.peopleMap)
+                    .filter(name => search === '' || name.indexOf(search) >= 0)
+                    .filter(name => {
+                        const house = this.peopleMap[name].house;
+                        return this.selectedHouse === "" || house === this.selectedHouse;
+                    })
+                    .map(name => {
+                        return {
+                            name: this.peopleMap[name].name,
+                            house: this.peopleMap[name].house,
+                        };
+                    });
+            },
+            houseNames: [],
+            selectedHouse: "",
+            context: null,
+            image: null,
+            imageLoaded: false,
+            hovering: false,
+            gps: {
+                timestamp: 0,
+                coords: {latitude: 0, longitude: 0},
+            },
+            get relativePosition() {
+                const lngDist = Math.abs(this.geo.topLeft.lng - this.geo.botRight.lng);
+                const latDst = Math.abs(this.geo.topLeft.lat - this.geo.botRight.lat);
+                const localLat = this.gps.coords.latitude - this.geo.topLeft.lat;
+                const localLng = this.gps.coords.longitude - this.geo.topLeft.lng;
+                const relLng = localLng / lngDist;
+                const x = relLng * this.$refs.canvas.width;
+                const relLat = localLat / latDst;
+                const y = relLat * this.$refs.canvas.height;
+                return {
+                    x,
+                    y,
+                }
+            },
+            /**
+             * @param {GeolocationPosition} loc
+             */
+            watchLocation(loc) {
+                this.gps.timestamp = loc.timestamp;
+                this.gps.coords = loc.coords;
 
-						window.scrollTo({
-							top:      0,
-							behavior: "smooth",
-						});
-					},
-					redraw() {
-						const w = this.$refs.canvas.width;
-						const h = this.$refs.canvas.height;
-						this.context.clearRect(0, 0, w, h);
-						this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height, 0, 0, w, h);
-						this.houses.forEach((house) => {
-							if(!this.houseNames.includes(house.name)) {
-								this.houseNames.push(house.name);
-							}
+                console.log(this.relativePosition)
+            },
+            reset() {
+                this.search = '';
+                if (this.selectedHouse.length > 0) {
+                    this.selectedHouse = '';
+                    this.redraw();
+                }
+            },
+            highlight(houseName) {
+                this.redraw();
+                let house = this.houses.filter(house => house.name === houseName);
+                if (house.length === 0) {
+                    return;
+                }
+                house = house[0];
 
-							house.people.forEach(person => {
-								this.peopleMap[person.toLowerCase()] = {
-									name:  person,
-									house: house.name,
-								};
-							});
-						});
-					},
-					hitHouse(relativeX, relativeY) {
-						return this.houses.find(house => {
-							return Math.pow(relativeX - house.coords[0], 2) + Math.pow(relativeY - house.coords[1], 2) < Math.pow(house.coords[2], 2);
-						});
-					},
-					handleMapClick(event) {
-						const multiplier = this.$refs.canvas.width / this.$refs.canvas.clientWidth;
-						let relativeX = (event.layerX - this.$refs.canvas.offsetLeft) * multiplier;
-						let relativeY = (event.layerY - this.$refs.canvas.offsetTop) * multiplier;
-						const hit = this.hitHouse(relativeX, relativeY);
+                this.context.beginPath();
+                this.context.arc(house.coords[0], house.coords[1], house.coords[2], 0, 2 * Math.PI, false);
+                this.context.fillStyle = 'rgba(200,15,30,0.75)';
+                this.context.fill();
 
-						if(hit) {
-							this.selectedHouse = hit.name;
-						}
-					},
-					handleMouseOnMap(event) {
-						const multiplier = this.$refs.canvas.width / this.$refs.canvas.clientWidth;
-						let relativeX = (event.layerX - this.$refs.canvas.offsetLeft) * multiplier;
-						let relativeY = (event.layerY - this.$refs.canvas.offsetTop) * multiplier;
-						this.hovering = this.hitHouse(relativeX, relativeY);
-					},
-					init() {
-						this.context = this.$refs.canvas.getContext('2d');
-						this.houses.sort((a, b) => a.name < b.name
-						                           ? -1
-						                           : 1);
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                });
+            },
+            redraw() {
+                const w = this.$refs.canvas.width;
+                const h = this.$refs.canvas.height;
+                this.context.clearRect(0, 0, w, h);
+                this.context.drawImage(this.image, 0, 0, this.image.width, this.image.height, 0, 0, w, h);
+                this.houses.forEach((house) => {
+                    if (!this.houseNames.includes(house.name)) {
+                        this.houseNames.push(house.name);
+                    }
 
-						this.image = new Image();
-						this.image.src = './tfi_map.jpg';
-						this.image.onload = () => this.redraw();
+                    house.people.forEach(person => {
+                        this.peopleMap[person.toLowerCase()] = {
+                            name: person,
+                            house: house.name,
+                        };
+                    });
+                });
+            },
+            hitHouse(relativeX, relativeY) {
+                return this.houses.find(house => {
+                    return Math.pow(relativeX - house.coords[0], 2) + Math.pow(relativeY - house.coords[1], 2) < Math.pow(house.coords[2], 2);
+                });
+            },
+            handleMapClick(event) {
+                const multiplier = this.$refs.canvas.width / this.$refs.canvas.clientWidth;
+                let relativeX = (event.layerX - this.$refs.canvas.offsetLeft) * multiplier;
+                let relativeY = (event.layerY - this.$refs.canvas.offsetTop) * multiplier;
+                const hit = this.hitHouse(relativeX, relativeY);
 
-						this.$watch('selectedHouse', value => this.highlight(value));
-					},
-				}));
-			});
-		</script>
-	</body>
+                if (hit) {
+                    this.selectedHouse = hit.name;
+                }
+            },
+            handleMouseOnMap(event) {
+                const multiplier = this.$refs.canvas.width / this.$refs.canvas.clientWidth;
+                let relativeX = (event.layerX - this.$refs.canvas.offsetLeft) * multiplier;
+                let relativeY = (event.layerY - this.$refs.canvas.offsetTop) * multiplier;
+                this.hovering = this.hitHouse(relativeX, relativeY);
+            },
+            init() {
+                this.context = this.$refs.canvas.getContext('2d');
+                this.houses.sort((a, b) => a.name < b.name
+                    ? -1
+                    : 1);
+
+                this.image = new Image();
+                this.image.src = './tfi_map.jpg';
+                this.image.onload = () => this.redraw();
+
+                this.$watch('selectedHouse', value => this.highlight(value));
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.watchPosition(this.watchLocation.bind(this))
+                }
+            },
+        }));
+    });
+</script>
+</body>
 </html>
