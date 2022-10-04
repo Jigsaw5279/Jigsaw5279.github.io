@@ -19,18 +19,6 @@
             :class="{'cursor-pointer': hovering}"
             x-ref="canvas"></canvas>
 
-    <template x-if="gps.timestamp > 0">
-        <div>
-            <span x-text="gps.timestamp"></span>,
-            <span x-text="gps.coords.latitude"></span>,
-            <span x-text="gps.coords.longitude"></span>,
-            <span x-text="gps.coords.heading"></span>,
-            <span x-text="gps.coords.speed"></span>,
-            <span x-text="relativePosition.x"></span>,
-            <span x-text="relativePosition.y"></span>,
-        </div>
-    </template>
-
     <div class="mt-4 flex flex-col md:flex-row">
         <select x-model="selectedHouse" class="w-full md:w-auto border border-gray-400 px-3 py-2 mr-4 text-xl rounded">
             <option value="">Select House</option>
@@ -360,8 +348,8 @@
             get relativePosition() {
                 const lngDist = Math.abs(this.geo.topLeft.lng - this.geo.botRight.lng);
                 const latDst = Math.abs(this.geo.topLeft.lat - this.geo.botRight.lat);
-                const localLat = this.gps.coords.latitude - this.geo.topLeft.lat;
-                const localLng = this.gps.coords.longitude - this.geo.topLeft.lng;
+                const localLat = Math.abs(this.gps.coords.latitude - this.geo.topLeft.lat);
+                const localLng = Math.abs(this.gps.coords.longitude - this.geo.topLeft.lng);
                 const relLng = localLng / lngDist;
                 const x = relLng * this.$refs.canvas.width;
                 const relLat = localLat / latDst;
@@ -378,7 +366,7 @@
                 this.gps.timestamp = loc.timestamp;
                 this.gps.coords = loc.coords;
 
-                console.log(this.relativePosition)
+                this.redraw();
             },
             reset() {
                 this.search = '';
@@ -422,6 +410,18 @@
                         };
                     });
                 });
+
+                if(this.gps.timestamp > 0) {
+                    this.context.beginPath();
+                    console.log(this.gps.coords);
+                    this.context.arc(this.relativePosition.x, this.relativePosition.y, Math.max(5,this.gps.coords.accuracy / 10), 0, 2 * Math.PI, false);
+                    this.context.fillStyle = 'rgba(15,200,200,0.65)';
+                    this.context.fill();
+                    this.context.beginPath();
+                    this.context.arc(this.relativePosition.x, this.relativePosition.y, 2, 0, 2 * Math.PI, false);
+                    this.context.fillStyle = 'rgba(200,15,49,1)';
+                    this.context.fill();
+                }
             },
             hitHouse(relativeX, relativeY) {
                 return this.houses.find(house => {
