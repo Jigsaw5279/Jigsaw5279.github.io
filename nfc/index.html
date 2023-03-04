@@ -49,7 +49,10 @@
 				const ndef = new NDEFReader();
 				try {
 					await ndef.scan();
-					ndef.onreading = consoleLog
+					ndef.onreading = e => {
+						consoleLog(e);
+						consoleLog(e.message);
+					}
 				} catch(error) {
 					consoleLog(error);
 				}
