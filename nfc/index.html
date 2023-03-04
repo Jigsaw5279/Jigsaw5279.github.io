@@ -5,6 +5,7 @@
 		<title>NFC Web API Test</title>
 
 		<script src="https://cdn.tailwindcss.com"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 		<style>
 			pre {
@@ -52,6 +53,13 @@
 					ndef.onreading = e => {
 						consoleLog(e);
 						consoleLog(e.message);
+
+						const decoder = new TextDecoder();
+						for (const record of e.message.records) {
+							consoleLog("Record type:  " + record.recordType);
+							consoleLog("MIME type:    " + record.mediaType);
+							consoleLog("=== data ===\n" + decoder.decode(record.data));
+						}
 					}
 				} catch(error) {
 					consoleLog(error);
