@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>NFC Web API Test</title>
+
+		<script src="https://cdn.tailwindcss.com"></script>
+
+		<style>
+			pre {
+				outline: 1px solid #cccccc;
+				padding: 5px;
+				margin: 5px;
+			}
+
+			.string {
+				color: green;
+			}
+
+			.number {
+				color: darkorange;
+			}
+
+			.boolean {
+				color: blue;
+			}
+
+			.null {
+				color: magenta;
+			}
+
+			.key {
+				color: red;
+			}
+		</style>
+	</head>
+	<body>
+		<button id="start" class="px-4 py-2 text-lg bg-green-400 text-green-700">Start Reading</button>
+		<div id="output" class="space-y-3"></div>
+	</body>
+
+	<script >
+		let button = document.getElementById('start');
+
+		button.addEventListener('click', readTag);
+
+		async function readTag() {
+			if ("NDEFReader" in window) {
+				const ndef = new NDEFReader();
+				try {
+					await ndef.scan();
+					ndef.onreading = consoleLog
+				} catch(error) {
+					consoleLog(error);
+				}
+			} else {
+				consoleLog("Web NFC is not supported.");
+			}
+		}
+
+		function output(inp) {
+			document.getElementById('output')
+			        .appendChild(document.createElement('pre'))
+				.innerHTML = (new Date()).toLocaleTimeString() + "\n\n" + inp;
+		}
+
+		function syntaxHighlight(json) {
+			json = json.replace(/&/g, '&amp;')
+			           .replace(/</g, '&lt;')
+			           .replace(/>/g, '&gt;');
+			return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+				var cls = 'number';
+				if(/^"/.test(match)) {
+					if(/:$/.test(match)) {
+						cls = 'key';
+					} else {
+						cls = 'string';
+					}
+				} else if(/true|false/.test(match)) {
+					cls = 'boolean';
+				} else if(/null/.test(match)) {
+					cls = 'null';
+				}
+				return '<span class="' + cls + '">' + match + '</span>';
+			});
+		}
+
+		function consoleLog(data) {
+			let str = JSON.stringify(data, undefined, 4);
+			output(syntaxHighlight(str));
+		}
+	</script>
+</html>
